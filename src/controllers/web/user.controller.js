@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import { generatePassword } from "../../data/generate-password.js";
-import { authService } from "../../services/web/auth.service.js";
 import { userService } from "../../services/web/user.service.js";
 import bcrypt from "bcrypt";
 import { config } from "dotenv";
@@ -8,14 +7,12 @@ config();
 const { SECRET_TOKEN } = process.env;
 
 const service = new userService();
-const serviceAuth = new authService();
 
 const create = async (req, res, next) => {
   const data = req.body;
-  const email = data.email;
   try {
-    const resultAuth = await serviceAuth.login(email);
-    if (resultAuth.recordset.length > 0) {
+    const user = await service.findExisting(data);
+    if (user.length > 0) {
       res.send({
         isValid: false,
         message: "Este usuario ya esta registrado",
@@ -36,6 +33,24 @@ const create = async (req, res, next) => {
         message: "Error al crear el usuario",
       });
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+const select = async (req, res, next) => {
+  try {
+    const users = await service.select();
+    res.send(users);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getRoles = async (req, res, next) => {
+  try {
+    const roles = await service.getRoles();
+    res.send(roles);
   } catch (error) {
     next(error);
   }
@@ -88,9 +103,9 @@ const update = async (req, res, next) => {
 
 const changeStatus = async (req, res, next) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { estado } = req.body;
   try {
-    if (status == 1) {
+    if (estado == 1) {
       const result = await service.inactiveUser(id);
       if (result.rowsAffected > 0) {
         res.send({
@@ -98,7 +113,7 @@ const changeStatus = async (req, res, next) => {
           message: "Estado Actualizado Exitosamente",
         });
       }
-    } else if (status == 0) {
+    } else if (estado == 0) {
       const result = await service.activeUser(id);
       if (result.rowsAffected > 0) {
         res.send({
@@ -112,4 +127,4 @@ const changeStatus = async (req, res, next) => {
   }
 };
 
-export { create, find, findOne, update, changeStatus };
+export { create, select, getRoles, find, findOne, update, changeStatus };

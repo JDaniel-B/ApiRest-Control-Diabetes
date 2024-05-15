@@ -1,7 +1,7 @@
 import Joi from "joi";
 
 const createUserSchema = Joi.object({
-  name: Joi.string().required(),
+  name: Joi.string().min(5).max(50).required(),
   phone: Joi.string()
     .regex(/^[0-9]{8}$/)
     .required(),

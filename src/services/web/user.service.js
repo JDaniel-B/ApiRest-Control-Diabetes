@@ -20,11 +20,38 @@ export class userService {
     return result;
   }
 
+  async select() {
+    const { recordset } = await this.pool
+      .request()
+      .query(
+        `SELECT U.id_usuario AS id, U.nombre, U.telefono, U.email FROM usuario U INNER JOIN roles R ON U.id_rol = R.id_rol WHERE U.estado = 1 AND U.id_rol = 2`
+      );
+    return recordset;
+  }
+
+  async getRoles() {
+    const { recordset } = await this.pool
+      .request()
+      .query(`SELECT id_rol AS id, nombre FROM roles`);
+    return recordset;
+  }
+
   async find() {
     const { recordset } = await this.pool
       .request()
       .query(
         `SELECT U.id_usuario, U.nombre, U.telefono, U.email, U.estado, R.nombre AS rol FROM usuario U INNER JOIN roles R ON U.id_rol = R.id_rol`
+      );
+    return recordset;
+  }
+
+  async findExisting(data) {
+    const { recordset } = await this.pool
+      .request()
+      .input("email", data.email)
+      .input("phone", data.phone)
+      .query(
+        `SELECT * FROM usuario WHERE email = @email OR telefono = @phone`
       );
     return recordset;
   }
@@ -67,6 +94,15 @@ export class userService {
       .request()
       .input("id", id)
       .query(`UPDATE usuario SET estado = 0 WHERE id_usuario = @id;`);
+    return result;
+  }
+
+  async recoveryPassword(id, passwordHash) {
+    const result = await this.pool
+      .request()
+      .input("id", id)
+      .input("password", passwordHash)
+      .query(`UPDATE usuario SET password = @password WHERE id_usuario = @id;`);
     return result;
   }
 }

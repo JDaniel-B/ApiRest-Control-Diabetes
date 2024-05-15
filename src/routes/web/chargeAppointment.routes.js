@@ -3,6 +3,8 @@ import {
   changeStatus,
   create,
   find,
+  findByUser,
+  findFuture,
   findOne,
   update,
 } from "../../controllers/web/charge-appointment.controller.js";
@@ -17,6 +19,10 @@ const router = Router();
 
 router
   .get("/find", find)
+
+  .get("/findFuture", findFuture)
+
+  .get("/findByUser/:id", findByUser)
 
   .get(
     "/findOne/:id",

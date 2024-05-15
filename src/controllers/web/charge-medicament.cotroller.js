@@ -1,21 +1,11 @@
-import { chargeAppointmentService } from "../../services/web/charge-appointment.service.js";
+import { chargeMedicamentService } from "../../services/web/charge-medicament.service.js";
 
-const service = new chargeAppointmentService();
+const service = new chargeMedicamentService();
 
 const find = async (req, res, next) => {
   try {
     const result = await service.find();
     return res.send(result);
-  } catch (error) {
-    next(error);
-  }
-};
-
-const findFuture = async (req, res, next) => {
-  try {
-    const header = await service.headerFuture();
-    const detail = await service.detailFuture();
-    return res.send({ header, detail });
   } catch (error) {
     next(error);
   }
@@ -48,12 +38,12 @@ const create = async (req, res, next) => {
     if (result.rowsAffected > 0) {
       return res.send({
         isValid: true,
-        message: "Cita Creada Exitosamente",
+        message: "Cargo Creado Exitosamente",
       });
     }
     return res.send({
       isValid: true,
-      message: "Error al crear la cita",
+      message: "Error al crear el cargo",
     });
   } catch (error) {
     next(error);
@@ -68,12 +58,12 @@ const update = async (req, res, next) => {
     if (result.rowsAffected > 0) {
       return res.send({
         isValid: true,
-        message: "Cita Actualizada Exitosamente",
+        message: "Cargo Actualizado Exitosamente",
       });
     }
     return res.send({
       isValid: true,
-      message: "Error al actualizar la cita",
+      message: "Error al actualizar el cargo",
     });
   } catch (error) {
     next(error);
@@ -106,4 +96,4 @@ const changeStatus = async (req, res, next) => {
   }
 };
 
-export { find, findFuture, findByUser, findOne, create, update, changeStatus };
+export { find, findByUser, findOne, create, update, changeStatus };

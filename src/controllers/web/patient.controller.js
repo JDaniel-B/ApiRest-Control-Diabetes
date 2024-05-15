@@ -1,8 +1,10 @@
 import { generatePassword } from "../../data/generate-password.js";
+import { emailService } from "../../services/web/email.service.js";
 import { patientService } from "../../services/web/patient.service.js";
 import bcrypt from "bcrypt";
 
 const service = new patientService();
+const serviceEmail = new emailService();
 
 const create = async (req, res, next) => {
   const data = req.body;
@@ -18,7 +20,7 @@ const create = async (req, res, next) => {
       const passwordHash = await bcrypt.hash(password, 10);
       const patiet = await service.create(data, passwordHash);
       if (patiet.rowsAffected > 0) {
-        console.log(password);
+        const result = serviceEmail.sendPassword(data.email, password)
         return res.send({
           isValid: true,
           message: "Paciente Creado Exitosamente",
@@ -30,6 +32,15 @@ const create = async (req, res, next) => {
         message: "Error al crear paciente",
       });
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+const select = async (req, res, next) => {
+  try {
+    const result = await service.select();
+    res.send(result);
   } catch (error) {
     next(error);
   }
@@ -63,17 +74,25 @@ const update = async (req, res, next) => {
     passwordHash = pass;
   }
   try {
-    const result = await service.update(data, passwordHash, id);
-    if (result.rowsAffected > 0) {
+    const result = await service.findExisting(data);
+    if (result.length > 0) {
+      return res.send({
+        isValid: false,
+        message: "Este usuario ya esta registrado",
+      });
+    } else {
+      const result = await service.update(data, passwordHash, id);
+      if (result.rowsAffected > 0) {
+        return res.send({
+          isValid: true,
+          message: "Actualizacion Exitosa",
+        });
+      }
       return res.send({
         isValid: true,
-        message: "Actualizacion Exitosa",
+        message: "Error al actualizar",
       });
     }
-    return res.send({
-      isValid: true,
-      message: "Error al actualizar",
-    });
   } catch (error) {
     next(error);
   }
@@ -81,9 +100,9 @@ const update = async (req, res, next) => {
 
 const changeStatus = async (req, res, next) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { estado } = req.body;
   try {
-    if (status == 1) {
+    if (estado == 1) {
       const result = await service.inactive(id);
       if (result.rowsAffected > 0) {
         res.send({
@@ -91,7 +110,7 @@ const changeStatus = async (req, res, next) => {
           message: "Estado Actualizado Exitosamente",
         });
       }
-    } else if (status == 0) {
+    } else if (estado == 0) {
       const result = await service.active(id);
       if (result.rowsAffected > 0) {
         res.send({
@@ -105,4 +124,4 @@ const changeStatus = async (req, res, next) => {
   }
 };
 
-export { create, find, findOne, update, changeStatus };
+export { create, select, find, findOne, update, changeStatus };

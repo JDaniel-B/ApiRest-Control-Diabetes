@@ -2,17 +2,21 @@ import jwt from "jsonwebtoken";
 import { authService } from "../../services/web/auth.service.js";
 import bcrypt from "bcrypt";
 import { config } from "dotenv";
+import { emailService } from "../../services/web/email.service.js";
+import { userService } from "../../services/web/user.service.js";
+import { generatePassword } from "../../data/generate-password.js";
 config();
 
 const { SECRET_TOKEN } = process.env;
 
 const service = new authService();
+const serviceEmail = new emailService();
+const serviceUser = new userService();
 
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const result = await service.login(email);
-    console.log(result);
     if (result.length == 0) {
       return res.send({
         auth: false,
@@ -47,4 +51,44 @@ const login = async (req, res, next) => {
   }
 };
 
-export { login };
+const recoveryPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const result = await service.login(email);
+    if (result.length == 0) {
+      return res.send({
+        auth: false,
+        message: "Usuario Incorrecto",
+      });
+    } else {
+      const password = generatePassword();
+      const passwordHash = await bcrypt.hash(password, 10);
+      const sendEmail = await serviceEmail.recoveryPassword(
+        result[0].email,
+        password
+      );
+      const recovery = await serviceUser.recoveryPassword(
+        result[0].id_usuario,
+        passwordHash
+      );
+      return res.send({
+        auth: true,
+        message: "Correo Electronico enviado exitosamente",
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+const logout = async (req, res, next) => {
+  res.cookie("Auth", {
+    expires: Date.now(),
+    maxAge: Date.now(),
+    httpOnly: true,
+    secure: true,
+  });
+  res.send({ message: "sesion cerrada" });
+};
+
+export { login, recoveryPassword, logout };

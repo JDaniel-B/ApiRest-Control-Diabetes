@@ -4,6 +4,7 @@ import {
   create,
   find,
   findOne,
+  select,
   update,
 } from "../../controllers/web/patient.controller.js";
 import { validatorHandler } from "../../middlewares/validator.handler.js";
@@ -17,6 +18,8 @@ const router = Router();
 
 router
   .post("/create", validatorHandler(createPatientSchema, "body"), create)
+
+  .get('/select', select)
 
   .get("/find", find)
 

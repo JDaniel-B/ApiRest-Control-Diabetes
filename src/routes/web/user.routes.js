@@ -4,6 +4,8 @@ import {
   create,
   find,
   findOne,
+  getRoles,
+  select,
   update,
 } from "../../controllers/web/user.controller.js";
 import { validatorHandler } from "../../middlewares/validator.handler.js";
@@ -17,6 +19,10 @@ const router = Router();
 
 router
   .post("/create", validatorHandler(createUserSchema, "body"), create)
+
+  .get("/select", select)
+
+  .get('/getRoles', getRoles)
 
   .get("/find", find)
 

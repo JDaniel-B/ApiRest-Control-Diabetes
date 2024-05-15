@@ -21,6 +21,15 @@ export class patientService {
     return result;
   }
 
+  async select() {
+    const { recordset } = await this.pool
+      .request()
+      .query(
+        `SELECT id_paciente AS id, CUI, nombre, direccion, telefono, email FROM paciente WHERE estado = 1`
+      );
+    return recordset;
+  }
+
   async find() {
     const { recordset } = await this.pool
       .request()

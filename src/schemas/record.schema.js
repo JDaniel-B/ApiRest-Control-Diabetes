@@ -1,17 +1,17 @@
 import Joi from "joi";
 
 const createRecordSchema = Joi.object({
-  idPatiet: Joi.number().required(),
+  idPatient: Joi.number().required(),
   idUser: Joi.number().required(),
   idDiabetes: Joi.number().required(),
-  date: Joi.date().required(),
+  date: Joi.date().max("now").required(),
 });
 
 const updateRecordSchema = Joi.object({
-  idPatiet: Joi.number().allow(null),
+  idPatient: Joi.number().allow(null),
   idUser: Joi.number().allow(null),
   idDiabetes: Joi.number().allow(null),
-  date: Joi.date().allow(null),
+  date: Joi.date().less("now").allow(null),
 });
 
 const idRecordSchema = Joi.object({
